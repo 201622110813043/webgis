@@ -1,0 +1,186 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <meta
+      name="viewport"
+      content="initial-scale=1,maximum-scale=1,user-scalable=no"
+    />
+
+    <title>Visualize points with a heatmap - 4.11</title>
+
+    <link
+      rel="stylesheet"
+      href="https://js.arcgis.com/4.11/esri/themes/light/main.css"
+    />
+    <script src="https://js.arcgis.com/4.10/"></script>
+
+    <style>
+      html,
+      body,
+      #viewDiv {
+        padding: 0;
+        margin: 0;
+        height: 100%;
+        width: 100%;
+      }
+    </style>
+
+    <script src="https://js.arcgis.com/4.11/"></script>
+
+    <script>
+      require([
+        "esri/Map",
+        "esri/layers/CSVLayer",
+        "esri/views/MapView",
+        "esri/widgets/Legend",
+        "esri/layers/FeatureLayer",
+      ], function(Map, CSVLayer, MapView, Legend,FeatureLayer) {
+			var base = document.getElementById("base");
+			var Heat = document.getElementById("Heat");
+			var Basemap = [
+				"gray",
+				"oceans",
+				"streets",
+				"terrain",
+				"osm"
+			];
+			document.querySelector(".btns").addEventListener("click", function(event) {
+        	for(var i = 0; i < base.length; i++)
+				{
+					if(base.options[i].selected)
+					{
+						view.map.basemap = Basemap[i];
+					}
+				}
+       });
+        const url =
+          "https://201622110813043.github.io/123/taxi.csv";
+       
+
+     var template = {
+          title: "Taxi Info",
+          
+          content: [
+          {
+          	type: "fields",
+          	fieldInfos: [
+          	{
+          		fieldName: "T_TargetID",
+          		label: "TargetID"
+          	},
+          	{
+          		fieldName: "Long",
+          		label: "Long"
+          	},
+          	{
+          		fieldName: "Lat",
+          		label: "Lat"
+          	},
+          	{
+          		fieldName: "T_Speed",
+          		label: "speed"
+          	},
+          	{
+          		fieldName: "T_Heading",
+          		label: "heading"
+          	},
+          	]
+          }
+          ]
+        };
+		
+				const renderer1 = {
+       			type: "simple",
+  					symbol: {
+    					type: "simple-marker", 
+    					size: 6,
+    					color: "black",
+    					outline: {
+      				width: 0.5,
+      				color: "white"
+    					}
+  					}
+      	};
+				const renderer2 = {
+          type: "heatmap",
+          colorStops: [
+            { color: "rgba(63, 40, 102, 0)", ratio: 0 },
+            { color: "#472b77", ratio: 0.083 },
+            { color: "#4e2d87", ratio: 0.166 },
+            { color: "#563098", ratio: 0.249 },
+            { color: "#5d32a8", ratio: 0.332 },
+            { color: "#6735be", ratio: 0.415 },
+            { color: "#7139d4", ratio: 0.498 },
+            { color: "#7b3ce9", ratio: 0.581 },
+            { color: "#853fff", ratio: 0.664 },
+            { color: "#a46fbf", ratio: 0.747 },
+            { color: "#c29f80", ratio: 0.83 },
+            { color: "#e0cf40", ratio: 0.913 },
+            { color: "#ffff00", ratio: 1 }
+          ],
+          maxPixelIntensity: 15,
+          minPixelIntensity: 0
+      };
+      
+      var renderer = [
+      	renderer1,
+      	renderer2
+      ];
+      document.querySelector(".Ren").addEventListener("click", function(event) {
+        	for(var i = 0; i < renderer.length; i++)
+				{
+					if(Heat.options[i].selected)
+					{
+						layer.renderer = renderer[i];
+					}
+				}
+       });
+      
+        const layer = new CSVLayer({
+          url: url,
+          title: "Wuhan GPS in a day",
+          copyright: "Wuhan GPS",
+		  		latitudeField:"Lat",
+		  		longitudeField:"Long",
+		  		popupTemplate: template,
+        });
+
+        const map = new Map({
+          basemap: "gray",
+          layers: [layer]
+        });
+
+        const view = new MapView({
+          container: "viewDiv",
+          center: [114.3, 30.5],
+          zoom: 11,
+          map: map
+        });
+
+        view.ui.add(
+          new Legend({
+            view: view
+          }),
+          "bottom-left"
+        );
+      });
+    </script>
+  </head>
+
+  <body>
+    <div id="viewDiv">
+    <select id="base" class="btns" style="position: fixed ! important; right: 100px; top: 5px; width: 60px; height: 25px;">
+ 				<option value="0">gray </option>
+ 				<option value="1">oceans </option>
+ 				<option value="2">streets </option>
+ 				<option value="3">terrain </option>
+ 				<option value="4">osm </option>
+ 		</select>
+ 		<select id="Heat" class="Ren" style="position: fixed ! important; right: 200px; top: 5px; width: 60px; height: 25px;"">
+ 			<option value="0">taxi</option>
+ 			<option value="1">Heatmap</option>
+ 		</select>
+ 		</div>
+  </body>
+</html>
