@@ -1,0 +1,371 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <meta
+      name="viewport"
+      content="initial-scale=1,maximum-scale=1,user-scalable=no"
+    />
+
+    <title>Visualize points with a heatmap - 4.11</title>
+
+    <link
+      rel="stylesheet"
+      href="https://js.arcgis.com/4.11/esri/themes/light/main.css"
+    />
+    <script src="https://201622110813043.github.io/webgis/echarts.js"></script>
+    <script src="https://js.arcgis.com/4.11/"></script>
+    
+    <style>
+      html,
+body,
+#viewDiv {
+	padding: 0;
+	margin: 0;
+	height: 100%;
+	width: 100%;
+}
+
+#mychart {
+	position: fixed ! important;
+	right: 0px;
+	top: 50px;
+	width: 250px;
+	height: 300px;
+	background-color: #C9C9C9;
+}
+
+#box {
+	position: fixed ! important;
+	right: 0px;
+	top: 100px;
+	width: 250px;
+	height: 250px;
+	position: relative;
+}
+
+.checks {
+	position: fixed ! important;
+	left: 5px;
+	top: 200px;
+}
+
+#sltlayer {
+	position: fixed ! important;
+	left: 5px;
+	top: 245px;
+}
+</style>
+    
+	<script>
+		var btn,type, data, chartExpand;
+		var p = new Array();
+		var field = "年平均气温";
+		var type = "bar";
+		require([
+					"esri/Map",
+        	"esri/views/MapView",
+        	"esri/layers/GeoJSONLayer",
+        	"esri/widgets/Expand",
+        	"esri/Graphic",
+        	"esri/widgets/Search",
+        	"esri/layers/CSVLayer"
+
+		],function(Map,MapView, GeoJSONLayer,Expand,Graphic,Search,CSVLayer){
+			
+				var set = document.getElementById("set");
+				set.addEventListener('change', function(e) {
+					var index = set.selectedIndex;
+					field = set.options[index].text;
+					if(field == "年平均气温") {
+						p[0] = data.TEM2014;
+						p[1] = data.TEM2015;
+						p[2] = data.TEM2016;
+						p[3] = data.TEM2017;
+						p[4] = data.TEM2018;
+					}else if(field == "年平均湿度"){
+						p[0] = data.Hum2014;
+						p[1] = data.Hum2015;
+						p[2] = data.Hum2016;
+						p[3] = data.Hum2017;
+						p[4] = data.Hum2018;
+					}else if(field == "年日照数"){
+						p[0] = data.Sun2014;
+						p[1] = data.Sun2015;
+						p[2] = data.Sun2016;
+						p[3] = data.Sun2017;
+						p[4] = data.Sun2018;
+					}else if(field == "年降水量"){
+						p[0] = data.Pre2014;
+						p[1] = data.Pre2015;
+						p[2] = data.Pre2016;
+						p[3] = data.Pre2017;
+						p[4] = data.Pre2018;
+					}
+					getChart(p, field, type);
+				});
+				
+				var set2 = document.getElementById("set2");
+				set2.addEventListener('change', function(e) {
+					var index = set2.selectedIndex;
+					type = set2.options[index].value;
+					getChart(p, field, type);
+				});
+				
+				btn = function(value, key, d) {
+					data = d;
+					p[0] = data.TEM2014;
+					p[1] = data.TEM2015;
+					p[2] = data.TEM2016;
+					p[3] = data.TEM2017;
+					p[4] = data.TEM2018;
+					getChart(p, field, type);
+				};
+			
+				
+			
+			function getChart(p, field, type) {
+				chartExpand.expanded = true;
+				var name;
+				var str = data.NAME_2;
+				if(str == "Anshun"){
+					str = "安顺市";
+				}else if(str == "Guiyang"){
+					str = "贵阳市";
+				}else if(str == "Bijie"){
+					str = "毕节市";
+				}else if(str == "Zunyi"){
+					str = "遵义市";
+				}else if(str == "Liupanshui"){
+					str = "六盘水市";
+				}else if(str == "Qiandongnanzhou"){
+					str = "黔东南州";
+				}else if(str == "Qiannanzhou"){
+					str = "黔南州";
+				}else if(str == "Qianxinanzhou"){
+					str = "黔西南州";
+				}else if(str == "Tongren"){
+					str = "铜仁市";
+				};
+				var myChart = echarts.init(document.getElementById("box"));
+				var barxValue = [2014, 2015, 2016, 2017, 2018];
+				if (field == "年平均气温") {
+					name = "℃";
+					str += "历年平均温度";
+				} else if (field == "年平均湿度"){
+					name = "%";
+					str += "历年相对湿度";
+				} else if (field == "年日照数"){
+					name = "小时";
+					str += "历年日照数";
+				}else if(field == "年降水量"){
+					name = "mm";
+					str += "历年降水量";
+				}
+				var option = {
+					title: {
+						left: "center",
+						text: str
+					},
+					xAxis: {
+						type: 'category',
+						data: barxValue,
+						axisTick: {
+						alignWithLabel: true
+						}
+					},
+					yAxis: {
+						name: name,
+						type: 'value',
+						axisLabel: {
+						margin: 2,
+						show: true,
+						interval: 'auto'
+						}
+					},
+					grid: {
+						left: 50
+					},
+					tooltip: {
+						trigger: 'axis',
+						axisPointer: {
+						type: 'shadow'
+						}
+					},
+					series: [{
+						name: field,
+						data: p,
+						type: type
+					}]
+				};
+
+	myChart.clear();
+	myChart.setOption(option);
+}
+
+			
+				var template = {
+					title: "Geometry info",
+					content: [
+          {
+          		type: "fields",
+          		fieldInfos: [
+          			{
+          				fieldName: "NAME_2",
+          				label: "Name"
+          			},
+          			{
+          				fieldName: "Shape_Area",
+          				label: "Area"
+          				
+          			},
+          			{
+          				fieldName: "Shape_Leng",
+          				label: "Leng"
+          			}, 
+							]
+          	},
+						{
+								type: "text",
+								text: '{Shape_Leng:btn}'
+						}
+          ]
+        };
+			
+				var template1 = {
+					title: "Point info",
+					content: [
+					{
+						type: "fields",
+						fieldInfos:[
+						{
+							fieldName: "Name",
+							label: "站点名"
+						},
+						{
+							fieldName: "number",
+							label: "编号"
+						},
+						{
+							fieldName: "Lat",
+							label: "纬度"
+						},
+						{
+							fieldName: "Lng",
+							label: "经度"
+						},
+						{
+							fieldName: "气压传感器海拔高度",
+							label: "海拔"
+						}
+						]
+					}
+					]
+				};
+			
+			
+				var geojsonLayer = new GeoJSONLayer({
+					title:"贵州省行政区",
+					url:"https://201622110813043.github.io/webgis/guizhou.json",
+					popupTemplate: template,
+				});
+				
+				var csvLayer = new CSVLayer({
+					title:"贵州省气象站",
+					url:"https://201622110813043.github.io/webgis/qixiangzhandian.csv",
+					popupTemplate: template1,
+				})
+			
+				const map = new Map({
+          		basemap: "streets",
+        	});
+       		
+       	const view = new MapView({
+          		container: "viewDiv",
+          		center: [106, 27],
+          		zoom: 7,
+          		map: map
+        });
+        
+        var layers = [
+					"贵州省行政区",
+					"贵州气象站点"
+				];
+				
+				var select = document.getElementById("test");
+				var FeatureLayers = [geojsonLayer, csvLayer];
+				var x = 0;
+				document.querySelector(".checks").addEventListener("click", function(event) {
+					var id = event.target.getAttribute("id");
+					if (document.getElementById(id).checked) {
+						select.options.add(new Option(layers[id], id));
+						select.options[x].selected = "selected";
+						x++;
+						view.map.add(FeatureLayers[id]);
+					} else {
+						for (var i = 0; i < select.length; i++) {
+							if (select.options[i].value == id) {
+								select.options.remove(i);
+								x--;
+								view.map.remove(FeatureLayers[id]);
+							}
+						}
+					}
+				});
+				
+				document.querySelector(".slt").addEventListener("click", function(event) {
+					for (var i = 0; i < select.length; i++) {
+						if (select.options[i].selected) {
+							FeatureLayers[select.options[i].value].visible = true;
+						} else {
+							FeatureLayers[select.options[i].value].visible = false;
+						}
+						}
+				});
+				
+        var searchWidget = new Search({
+          view: view
+        });
+        view.ui.add(searchWidget, {
+          position: "top-left"
+        });
+        
+				chartExpand = new Expand({
+					expandIconClass: "esri-icon-chart",
+					expandTooltip: "Population pyramid chart",
+					expanded: false,
+					view: view,
+					content: document.getElementById("mychart")
+				});
+        view.ui.add(chartExpand, "top-right");
+			});
+		
+	</script>
+	</head>
+	<body>
+			<div id="viewDiv">
+				<div id="mychart">
+					<select id="set">
+						<option>年平均气温</option>
+						<option>年平均湿度</option>
+						<option>年日照数</option>
+						<option>年降水量</option>
+					</select>
+					<select id="set2">
+						<option value="bar">柱状图</option>
+						<option value="line">折线图</option>
+					</select>
+					<div id="box"></div>
+				</div>
+				<div class="checks">
+						<input type="checkbox" id="0" /> 贵州省行政区
+						<br />
+						<input type="checkbox" id="1" /> 贵州气象站点
+				</div>
+				<div id="sltlayer">
+						<select class="slt" id="test" size="4" multiple="multiple">
+						</select>
+				</div>
+			</div>
+	</body>
+</html>
